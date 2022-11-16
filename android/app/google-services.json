@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "209823582400",
+    "project_id": "spidclass-76356",
+    "storage_bucket": "spidclass-76356.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:209823582400:android:5874605a54e4087a04c525",
+        "android_client_info": {
+          "package_name": "com.tomcohen.spidclass"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "209823582400-ihg1n0vsfd2h2bk8ks8og199pdm0toqu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVG2BN5H0MgZpwSYzGjf5uB4yrr5J1Srg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "209823582400-ihg1n0vsfd2h2bk8ks8og199pdm0toqu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

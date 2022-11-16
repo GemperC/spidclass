@@ -31,11 +31,27 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+    
+  provider: ^6.0.3
+  introduction_screen: ^3.0.2
+  get: ^4.6.5
+  get_storage: ^2.0.3
+  email_validator: ^2.1.17
 
+  # font_awesome_flutter: ^10.1.0
+  # cupertino_icons: ^1.0.2
+  google_fonts: ^3.0.1
+  datetime_picker_formfield: ^2.0.1
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.2
+  firebase_core: ^2.0.0
+  cloud_firestore: ^4.0.1
+  firebase_auth: ^4.0.1
+  firebase_analytics: ^10.0.1
+  firebase_crashlytics: ^3.0.1
+  firebase_performance: ^0.9.0+1
+  firebase_messaging: ^14.0.1
+  flutter_local_notifications: ^12.0.2
+
 
 dev_dependencies:
   flutter_test:
