@@ -85,14 +85,15 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
                   if (snapshot.hasData) {
                     final members = snapshot.data!;
                     print(members.length);
-                    return ListView.builder(
-                      physics: ScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: members.length,
-                      itemBuilder: (context, index) {
-                        return buildMemberTile(members[index]);
-                      },
-                    );
+                    return temp();
+                    // ListView.builder(
+                    //   physics: ScrollPhysics(),
+                    //   shrinkWrap: true,
+                    //   itemCount: members.length,
+                    //   itemBuilder: (context, index) {
+                    //     return buildMemberTile(members[index]);
+                    //   },
+                    // );
                   } else if (snapshot.hasData) {
                     return const Text('nothing');
                   } else {
@@ -113,6 +114,44 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map((doc) => Member.fromJson(doc.data())).toList());
+  }
+
+  Widget temp() {
+    return DataTable(
+      columns: [
+        DataColumn(
+            label: Text('Full Name',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+        DataColumn(
+            label: Text('Name',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+        DataColumn(
+            label: Text('Profession',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+      ],
+      rows: [
+        DataRow(cells: [
+          DataCell(Text('1')),
+          DataCell(Text('Stephen')),
+          DataCell(Text('Actor')),
+        ]),
+        DataRow(cells: [
+          DataCell(Text('5')),
+          DataCell(Text('John')),
+          DataCell(Text('Student')),
+        ]),
+        DataRow(cells: [
+          DataCell(Text('10')),
+          DataCell(Text('Harry')),
+          DataCell(Text('Leader')),
+        ]),
+        DataRow(cells: [
+          DataCell(Text('15')),
+          DataCell(Text('Peter')),
+          DataCell(Text('Scientist')),
+        ]),
+      ],
+    );
   }
 
   Future addMemberDialog() {
