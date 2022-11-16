@@ -154,6 +154,7 @@ class _ClassesPageState extends State<ClassesPage> {
                       // ),
                     ),
                   ),
+                  SizedBox(height: sizedBoxHight),
                   TextFormField(
                     controller: classLessonTimeController,
                     validator: (value) {

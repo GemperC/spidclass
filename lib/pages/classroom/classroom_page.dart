@@ -5,6 +5,7 @@ import 'package:spidclass/app_route.dart';
 import 'package:spidclass/config/font_size.dart';
 import 'package:spidclass/config/theme_colors.dart';
 import 'package:spidclass/models/class_model.dart';
+import 'package:spidclass/pages/class_members/class_members_arguments.dart';
 import 'package:spidclass/pages/classroom/classroom_arguments.dart';
 import 'package:spidclass/widgets/main_button_3.dart';
 
@@ -29,11 +30,15 @@ class _ClassroomPageState extends State<ClassroomPage> {
       ),
       body: Column(
         children: <Widget>[
-          MainButton3(
-            onPressed: () {
-              Navigator.pushNamed(context, AppRoute.classMembers);
-            },
-            text: 'Members',
+          SizedBox(height: 50),
+          Center(
+            child: MainButton3(
+              onPressed: () {
+                final args = ClassMembersArguments(classroom: widget.arguments.classroom);
+                Navigator.pushNamed(context, AppRoute.classMembers, arguments: args);
+              },
+              text: 'Members',
+            ),
           )
           // StreamBuilder<List<Class>>(
           //     stream: fetchClasses(),
