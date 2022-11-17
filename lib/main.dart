@@ -1,6 +1,7 @@
 import 'package:spidclass/pages/class_members/class_members_arguments.dart';
 import 'package:spidclass/pages/class_members/class_members_page.dart';
 import 'package:spidclass/pages/classroom/classroom_arguments.dart';
+import 'package:spidclass/widgets/utils.dart';
 
 import 'app.dart';
 
@@ -18,6 +19,9 @@ class Spidclass extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
         debugShowCheckedModeBanner: false,
+        navigatorKey: navigatorKey,
+        scaffoldMessengerKey: Utils.messengerKey,
+
         title: 'Spidclass',
         theme: ThemeData(
           primarySwatch: Colors.blue,

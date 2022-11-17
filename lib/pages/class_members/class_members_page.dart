@@ -1,5 +1,9 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:spidclass/app_route.dart';
@@ -76,6 +80,7 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
         ],
       ),
       body: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
         child: Column(
           children: <Widget>[
             SizedBox(height: 20),
@@ -84,8 +89,10 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
                 builder: ((context, snapshot) {
                   if (snapshot.hasData) {
                     final members = snapshot.data!;
+
                     print(members.length);
-                    return temp();
+                    print(members.runtimeType);
+                    return buildDataTable(members);
                     // ListView.builder(
                     //   physics: ScrollPhysics(),
                     //   shrinkWrap: true,
@@ -116,43 +123,127 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
             snapshot.docs.map((doc) => Member.fromJson(doc.data())).toList());
   }
 
-  Widget temp() {
+  Widget buildDataTable(List<Member> members) {
+    final columns = ['Full Name', 'Class', 'Father', 'Mother'];
     return DataTable(
-      columns: [
-        DataColumn(
-            label: Text('Full Name',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-        DataColumn(
-            label: Text('Name',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-        DataColumn(
-            label: Text('Profession',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-      ],
-      rows: [
-        DataRow(cells: [
-          DataCell(Text('1')),
-          DataCell(Text('Stephen')),
-          DataCell(Text('Actor')),
-        ]),
-        DataRow(cells: [
-          DataCell(Text('5')),
-          DataCell(Text('John')),
-          DataCell(Text('Student')),
-        ]),
-        DataRow(cells: [
-          DataCell(Text('10')),
-          DataCell(Text('Harry')),
-          DataCell(Text('Leader')),
-        ]),
-        DataRow(cells: [
-          DataCell(Text('15')),
-          DataCell(Text('Peter')),
-          DataCell(Text('Scientist')),
-        ]),
-      ],
+      columns: getColumns(columns),
+      columnSpacing: 12,
+      rows: getRows(members),
     );
   }
+
+  List<DataRow> getRows(List<Member> members) => members.map((Member member) {
+        final cells = [
+          '${member.first_name} ${member.second_name}',
+          member.class_year,
+          member.father,
+          member.mother,
+        ];
+        return DataRow(
+          cells: getCells(cells),
+          onLongPress: () {
+            showNumbersDialog(member);
+          },
+        );
+      }).toList();
+
+  Future showNumbersDialog(Member member) {
+    final List<String> numberList = <String>[
+      member.number,
+      member.father_number,
+      member.mother_number
+    ];
+    String dropdownvalue = member.number;
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        // backgroundColor: ThemeColors.scaffoldBgColor,
+        scrollable: true,
+        title: Text(
+          '${member.first_name} ${member.second_name} Numbers:',
+          style: GoogleFonts.poppins(
+            color: ThemeColors.blackTextColor,
+            fontSize: FontSize.large,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Container(
+          // width: 300,
+          child: Form(
+              key: formKey,
+              child: Column(
+                children: [
+                  copyNumber(member.number, '${member.first_name}\'s number'),
+                  copyNumber(member.father_number, member.father),
+                  copyNumber(member.mother_number, member.mother)
+                ],
+              )),
+        ),
+      ),
+    );
+  }
+
+  Widget copyNumber(String number, String howsNumber) {
+    if (howsNumber == "-") {
+      return Container();
+    }
+    return Padding(
+      padding: const EdgeInsets.all(3.0),
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: RichText(
+          text: TextSpan(
+            style: GoogleFonts.poppins(
+              color: ThemeColors.blackTextColor,
+              fontSize: FontSize.medium,
+              fontWeight: FontWeight.w400,
+            ),
+            text: "$howsNumber:    ",
+            children: [
+              TextSpan(
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () {
+                    if (number != "-") {
+                      Clipboard.setData(ClipboardData(text: number))
+                          .then((value) {
+                        Utils.showSnackBarWithColor(
+                            'The Number has been copied', Colors.blue);
+                      });
+                      Navigator.pop(context);
+                    }
+                  },
+                text: number,
+                style: GoogleFonts.poppins(
+                  color: ThemeColors.primaryColor,
+                  fontSize: FontSize.medium,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<DataCell> getCells(List<dynamic> cells) => cells.map((data) {
+        return DataCell(
+          Text(
+            '$data',
+            style: GoogleFonts.poppins(
+              color: ThemeColors.blackTextColor,
+              fontSize: FontSize.small,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          // onTap: () {
+          //   print('asdad');
+          // },
+        );
+      }).toList();
+
+  List<DataColumn> getColumns(List<String> columns) =>
+      columns.map((String column) => DataColumn(label: Text(column))).toList();
 
   Future addMemberDialog() {
     return showDialog(
@@ -206,9 +297,22 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
               },
               child: Text('Cancel')),
           TextButton(
-              onPressed: () {
-                createMember();
-                Navigator.pop(context);
+              onPressed: () async {
+                if (await createMember()) {
+                  first_nameController.clear();
+                  second_nameController.clear();
+                  motherController.clear();
+                  fatherController.clear();
+                  mother_numberController.clear();
+                  father_numberController.clear();
+                  numberController.clear();
+                  trial_lessonController.clear();
+                  last_paymentController.clear();
+                  attendanceController.clear();
+                  other_informationController.clear();
+                  ageController.clear();
+                  class_yearController.clear();
+                }
               },
               child: Text('Add Member')),
         ],
@@ -221,7 +325,9 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
       TextFormField(
         controller: controller,
         validator: (value) {
-          if (controller.text.isEmpty) return "This field can't be empty";
+          if (controller.text.isEmpty) {
+            return "This field can't be empty";
+          }
         },
         style: GoogleFonts.poppins(
           color: ThemeColors.blackTextColor,
@@ -280,10 +386,10 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
         ),
       );
 
-  Future createMember() async {
+  Future<bool> createMember() async {
     final isValid = formKey.currentState!.validate();
     if (!isValid) {
-      return;
+      return Future.value(false);
     } else {
       final docMember = FirebaseFirestore.instance
           .collection('classes')
@@ -316,45 +422,45 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
       final json = member.toJson();
       await docMember.set(json);
 
-      //create batteries to the battery station
       Utils.showSnackBarWithColor('New Member has been added', Colors.blue);
       Navigator.pop(context);
+      return Future.value(true);
     }
   }
 
-  Widget buildMemberTile(Member member) => ListTile(
-      // go to the class page
-      onTap: () {},
-      // build the tile info and design
-      title: Center(
-        child: Padding(
-          // padding betwwent he cards
-          padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
-          child: Container(
-            decoration: BoxDecoration(
-                color: Color.fromARGB(255, 65, 61, 82),
-                borderRadius: BorderRadius.all(Radius.circular(12))),
-            child: Padding(
-              // padding of the text in the cards
-              padding: const EdgeInsets.fromLTRB(40, 20, 40, 20),
-              child: Column(
-                children: [
-                  Align(
-                    //alingemt of the titel
-                    alignment: Alignment.topLeft,
-                    child: Text(
-                      '${member.first_name}',
-                      style: GoogleFonts.poppins(
-                        color: ThemeColors.whiteTextColor,
-                        fontSize: FontSize.xxLarge,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ));
+  // Widget buildMemberTile(Member member) => ListTile(
+  //     // go to the class page
+  //     onTap: () {},
+  //     // build the tile info and design
+  //     title: Center(
+  //       child: Padding(
+  //         // padding betwwent he cards
+  //         padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+  //         child: Container(
+  //           decoration: BoxDecoration(
+  //               color: Color.fromARGB(255, 65, 61, 82),
+  //               borderRadius: BorderRadius.all(Radius.circular(12))),
+  //           child: Padding(
+  //             // padding of the text in the cards
+  //             padding: const EdgeInsets.fromLTRB(40, 20, 40, 20),
+  //             child: Column(
+  //               children: [
+  //                 Align(
+  //                   //alingemt of the titel
+  //                   alignment: Alignment.topLeft,
+  //                   child: Text(
+  //                     '${member.first_name}',
+  //                     style: GoogleFonts.poppins(
+  //                       color: ThemeColors.whiteTextColor,
+  //                       fontSize: FontSize.xxLarge,
+  //                       fontWeight: FontWeight.w600,
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //     ));
 }
