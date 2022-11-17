@@ -91,8 +91,6 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
                   if (snapshot.hasData) {
                     final members = snapshot.data!;
 
-                    print(members.length);
-                    print(members.runtimeType);
                     return buildDataTable(members);
                   } else if (snapshot.hasData) {
                     return const Text('nothing');
@@ -117,11 +115,19 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
   }
 
   Widget buildDataTable(List<Member> members) {
-    final columns = ['Full Name', 'Class', 'Father', 'Mother'];
+    final columns = [
+      'Full Name',
+      'Class',
+      'Father',
+      'Mother',
+      'Last Payment',
+      'Next Payment',
+    ];
     return DataTable(
       columns: getColumns(columns),
       columnSpacing: 12,
       rows: getRows(members),
+      showCheckboxColumn: false,
     );
   }
 
@@ -131,6 +137,8 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
           member.class_year,
           member.father,
           member.mother,
+          "${member.last_payment.day}.${member.last_payment.month}.${member.last_payment.year}",
+          "${member.next_payment.day}.${member.next_payment.month}.${member.next_payment.year}"
         ];
         return DataRow(
           cells: getCells(cells),
@@ -144,8 +152,11 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
       }).toList();
 
   Future updateMemberDialog(Member member) {
-    final docMember =
-        FirebaseFirestore.instance.collection('classes').doc(widget.arguments.classroom.id).collection('members').doc(member.id);
+    final docMember = FirebaseFirestore.instance
+        .collection('classes')
+        .doc(widget.arguments.classroom.id)
+        .collection('members')
+        .doc(member.id);
 
     first_nameController.text = member.first_name;
     second_nameController.text = member.second_name;
@@ -199,6 +210,8 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
                   SizedBox(height: sizedBoxHight),
                   MemberDateFromField(trial_lessonController, 'Trial Lesson'),
                   SizedBox(height: sizedBoxHight),
+                  MemberDateFromField(last_paymentController, 'Last Payment'),
+                  SizedBox(height: sizedBoxHight),
                   MemberTextFromField(
                       other_informationController, 'Other Info'),
                 ],
@@ -221,7 +234,8 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
                   'father_number': father_numberController.text,
                   'number': numberController.text,
                   'trial_lesson': DateTime.parse(trial_lessonController.text),
-                  // 'last_payment': last_paymentController.text,
+                  'last_payment': DateTime.parse(last_paymentController.text),
+                  'next_payment': (DateTime.parse(last_paymentController.text).add(const Duration(days: 28))),
                   // 'attendance': 0,
                   'other_information': other_informationController.text,
                   'age': int.parse(ageController.text),
@@ -387,6 +401,8 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
                   SizedBox(height: sizedBoxHight),
                   MemberDateFromField(trial_lessonController, 'Trial Lesson'),
                   SizedBox(height: sizedBoxHight),
+                  MemberDateFromField(last_paymentController, 'Last Payment'),
+                  SizedBox(height: sizedBoxHight),
                   MemberTextFromField(
                       other_informationController, 'Other Info'),
                 ],
@@ -508,8 +524,8 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
         father_number: father_numberController.text,
         number: numberController.text,
         trial_lesson: DateTime.parse(trial_lessonController.text),
-        last_payment: DateTime.parse("2000-02-02"),
-        next_payment: DateTime.parse("2000-02-02"),
+        last_payment: DateTime.parse(last_paymentController.text),
+        next_payment: (DateTime.parse(last_paymentController.text).add(const Duration(days: 28))),
         attendance: 0,
         attendance_dates: [
           DateTime.parse(trial_lessonController.text),
@@ -530,39 +546,4 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
     }
   }
 
-  // Widget buildMemberTile(Member member) => ListTile(
-  //     // go to the class page
-  //     onTap: () {},
-  //     // build the tile info and design
-  //     title: Center(
-  //       child: Padding(
-  //         // padding betwwent he cards
-  //         padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
-  //         child: Container(
-  //           decoration: BoxDecoration(
-  //               color: Color.fromARGB(255, 65, 61, 82),
-  //               borderRadius: BorderRadius.all(Radius.circular(12))),
-  //           child: Padding(
-  //             // padding of the text in the cards
-  //             padding: const EdgeInsets.fromLTRB(40, 20, 40, 20),
-  //             child: Column(
-  //               children: [
-  //                 Align(
-  //                   //alingemt of the titel
-  //                   alignment: Alignment.topLeft,
-  //                   child: Text(
-  //                     '${member.first_name}',
-  //                     style: GoogleFonts.poppins(
-  //                       color: ThemeColors.whiteTextColor,
-  //                       fontSize: FontSize.xxLarge,
-  //                       fontWeight: FontWeight.w600,
-  //                     ),
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //     ));
 }
