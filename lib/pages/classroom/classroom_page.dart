@@ -5,6 +5,7 @@ import 'package:spidclass/app_route.dart';
 import 'package:spidclass/config/font_size.dart';
 import 'package:spidclass/config/theme_colors.dart';
 import 'package:spidclass/models/class_model.dart';
+import 'package:spidclass/pages/attendance/attendance_arguments.dart';
 import 'package:spidclass/pages/class_members/class_members_arguments.dart';
 import 'package:spidclass/pages/classroom/classroom_arguments.dart';
 import 'package:spidclass/widgets/main_button_3.dart';
@@ -28,38 +29,33 @@ class _ClassroomPageState extends State<ClassroomPage> {
         title: Text(
             "${widget.arguments.classroom.name} in ${widget.arguments.classroom.place}"),
       ),
-      body: Column(
-        children: <Widget>[
-          SizedBox(height: 50),
-          Center(
-            child: MainButton3(
+      body: Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            // SizedBox(height: 50),
+            MainButton3(
               onPressed: () {
-                final args = ClassMembersArguments(classroom: widget.arguments.classroom);
-                Navigator.pushNamed(context, AppRoute.classMembers, arguments: args);
+                final args = ClassMembersArguments(
+                    classroom: widget.arguments.classroom);
+                Navigator.pushNamed(context, AppRoute.classMembers,
+                    arguments: args);
               },
-              text: 'Members',
+              text: 'Members Information',
             ),
-          )
-          // StreamBuilder<List<Class>>(
-          //     stream: fetchClasses(),
-          //     builder: ((context, snapshot) {
-          //       if (snapshot.hasData) {
-          //         final classes = snapshot.data!;
-          //         print(classes.length);
-          //         return ListView.builder(
-          //           shrinkWrap: true,
-          //           itemCount: classes.length,
-          //           itemBuilder: (context, index) {
-          //             return buildClassTile(classes[index]);
-          //           },
-          //         );
-          //       } else if (snapshot.hasData) {
-          //         return const Text('nothing');
-          //       } else {
-          //         return (const Text('error'));
-          //       }
-          //     }))
-        ],
+            SizedBox(height: 50),
+            MainButton3(
+              onPressed: () {
+                final args = AttendanceArguments(
+                    classroom: widget.arguments.classroom);
+                Navigator.pushNamed(context, AppRoute.attendance,
+                    arguments: args);
+              },
+              text: 'Attendance',
+            ),
+          ],
+        ),
       ),
     );
   }

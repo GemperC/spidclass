@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:spidclass/app.dart';
 import 'package:spidclass/app_route.dart';
 import 'package:spidclass/config/font_size.dart';
 import 'package:spidclass/config/theme_colors.dart';
 import 'package:spidclass/models/class_model.dart';
 import 'package:spidclass/models/member_model.dart';
+import 'package:spidclass/pages/attendance/attendance_arguments.dart';
 import 'package:spidclass/pages/class_members/class_members_arguments.dart';
 import 'package:spidclass/pages/class_members/updateMemberDialog.dart';
 import 'package:spidclass/pages/classroom/classroom_arguments.dart';
@@ -19,18 +21,18 @@ import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:spidclass/widgets/utils.dart';
 
-class ClassMembersPage extends StatefulWidget {
-  final ClassMembersArguments arguments;
-  const ClassMembersPage({
+class AttendancePage extends StatefulWidget {
+  final AttendanceArguments arguments;
+  const AttendancePage({
     required this.arguments,
     Key? key,
   }) : super(key: key);
 
   @override
-  State<ClassMembersPage> createState() => _ClassMembersPageState();
+  State<AttendancePage> createState() => _AttendancePageState();
 }
 
-class _ClassMembersPageState extends State<ClassMembersPage> {
+class _AttendancePageState extends State<AttendancePage> {
   final formKey = GlobalKey<FormState>();
 
   TextEditingController first_nameController = TextEditingController();
@@ -66,19 +68,6 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
       appBar: AppBar(
         title: Text(
             "${widget.arguments.classroom.name} in ${widget.arguments.classroom.place}"),
-        actions: <Widget>[
-          Padding(
-              padding: EdgeInsets.only(right: 20.0),
-              child: GestureDetector(
-                onTap: () {
-                  addMemberDialog();
-                },
-                child: Icon(
-                  Icons.add,
-                  size: 26.0,
-                ),
-              )),
-        ],
       ),
       body: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -117,12 +106,7 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
   Widget buildDataTable(List<Member> members) {
     final columns = [
       'Full Name',
-      'Class',
-      'Father',
-      'Mother',
-      'Last Payment',
-      'Next Payment',
-      'Other Info'
+      'Attendace',
     ];
     return DataTable(
       columns: getColumns(columns),
@@ -133,159 +117,30 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
   }
 
   List<DataRow> getRows(List<Member> members) => members.map((Member member) {
-        String lastPaymet =
-            "${member.last_payment.day}.${member.last_payment.month}.${member.last_payment.year}";
-        String nextPayment =
-            "${member.next_payment.day}.${member.next_payment.month}.${member.next_payment.year}";
-        if (member.last_payment.year < 2020) {
-          lastPaymet = 'N/A';
-          nextPayment = 'N/A';
-        }
+        List<DateTime> attendanceList = [];
+        member.attendance_dates.reversed.toList().forEach((element) {
+          attendanceList.add((element as Timestamp).toDate());
+        });
+        print(attendanceList);
         final cells = [
           '${member.first_name} ${member.second_name}',
-          member.class_year,
-          member.father,
-          member.mother,
-          lastPaymet,
-          nextPayment,
-          member.other_information,
+          '${attendanceList.map((e) => "${e.day}.${e.month}.${e.year}")}',
         ];
         return DataRow(
+
           cells: getCells(cells),
           onSelectChanged: (value) {
-            showNumbersDialog(member);
-          },
-          onLongPress: () {
-            updateMemberDialog(member);
+            FirebaseFirestore.instance
+                .collection('classes')
+                .doc(widget.arguments.classroom.id)
+                .collection('members')
+                .doc(member.id)
+                .update({
+                  'attendance_dates' : FieldValue.arrayUnion([DateTime.now() as dynamic])
+                });
           },
         );
       }).toList();
-
-  Future updateMemberDialog(Member member) {
-    final docMember = FirebaseFirestore.instance
-        .collection('classes')
-        .doc(widget.arguments.classroom.id)
-        .collection('members')
-        .doc(member.id);
-
-    first_nameController.text = member.first_name;
-    second_nameController.text = member.second_name;
-    motherController.text = member.mother;
-    fatherController.text = member.father;
-    mother_numberController.text = member.mother_number;
-    father_numberController.text = member.father_number;
-    numberController.text = member.number;
-    trial_lessonController.text = "${member.trial_lesson}";
-    last_paymentController.text = "${member.last_payment}";
-    attendanceController.text = "${member.attendance}";
-    other_informationController.text = member.other_information;
-    ageController.text = "${member.age}";
-    class_yearController.text = member.class_year;
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        // backgroundColor: ThemeColors.scaffoldBgColor,
-        scrollable: true,
-        title: Text(
-          "Update Details",
-          style: GoogleFonts.poppins(
-            color: ThemeColors.blackTextColor,
-            fontSize: FontSize.large,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        content: Container(
-          width: 300,
-          child: Form(
-              key: formKey,
-              child: Column(
-                children: [
-                  MemberTextFromField(first_nameController, 'First Name'),
-                  SizedBox(height: sizedBoxHight),
-                  MemberTextFromField(second_nameController, 'Second Name'),
-                  SizedBox(height: sizedBoxHight),
-                  MemberTextFromField(ageController, 'Age'),
-                  SizedBox(height: sizedBoxHight),
-                  MemberTextFromField(class_yearController, 'Class Year'),
-                  SizedBox(height: sizedBoxHight),
-                  MemberTextFromField(motherController, 'Mother'),
-                  SizedBox(height: sizedBoxHight),
-                  MemberTextFromField(fatherController, 'Father'),
-                  SizedBox(height: sizedBoxHight),
-                  MemberTextFromField(mother_numberController, 'Mother Number'),
-                  SizedBox(height: sizedBoxHight),
-                  MemberTextFromField(father_numberController, 'Father Number'),
-                  SizedBox(height: sizedBoxHight),
-                  MemberTextFromField(numberController, 'Number'),
-                  SizedBox(height: sizedBoxHight),
-                  MemberDateFromField(trial_lessonController, 'Trial Lesson'),
-                  SizedBox(height: sizedBoxHight),
-                  MemberDateFromField(last_paymentController, 'Last Payment'),
-                  SizedBox(height: sizedBoxHight),
-                  MemberTextFromField(
-                      other_informationController, 'Other Info'),
-                ],
-              )),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                first_nameController.clear();
-                second_nameController.clear();
-                motherController.clear();
-                fatherController.clear();
-                mother_numberController.clear();
-                father_numberController.clear();
-                numberController.clear();
-                trial_lessonController.clear();
-                last_paymentController.clear();
-                attendanceController.clear();
-                other_informationController.clear();
-                ageController.clear();
-                class_yearController.clear();
-              },
-              child: Text('Cancel')),
-          TextButton(
-              onPressed: () {
-                docMember.update({
-                  'first_name': first_nameController.text,
-                  'second_name': second_nameController.text,
-                  'mother': motherController.text,
-                  'father': fatherController.text,
-                  'mother_number': mother_numberController.text,
-                  'father_number': father_numberController.text,
-                  'number': numberController.text,
-                  'trial_lesson': DateTime.parse(trial_lessonController.text),
-                  'last_payment': DateTime.parse(last_paymentController.text),
-                  'next_payment': (DateTime.parse(last_paymentController.text)
-                      .add(const Duration(days: 28))),
-                  // 'attendance': 0,
-                  'other_information': other_informationController.text,
-                  'age': int.parse(ageController.text),
-                  'class_year': class_yearController.text,
-                });
-
-                first_nameController.clear();
-                second_nameController.clear();
-                motherController.clear();
-                fatherController.clear();
-                mother_numberController.clear();
-                father_numberController.clear();
-                numberController.clear();
-                trial_lessonController.clear();
-                last_paymentController.clear();
-                attendanceController.clear();
-                other_informationController.clear();
-                ageController.clear();
-                class_yearController.clear();
-                Navigator.pop(context);
-              },
-              child: Text('Update Info')),
-        ],
-      ),
-    );
-  }
 
   Future showNumbersDialog(Member member) {
     final List<String> numberList = <String>[

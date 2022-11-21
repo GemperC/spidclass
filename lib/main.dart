@@ -1,3 +1,5 @@
+import 'package:spidclass/pages/attendance/attendance_arguments.dart';
+import 'package:spidclass/pages/attendance/attendance_page.dart';
 import 'package:spidclass/pages/class_members/class_members_arguments.dart';
 import 'package:spidclass/pages/class_members/class_members_page.dart';
 import 'package:spidclass/pages/classroom/classroom_arguments.dart';
@@ -44,6 +46,12 @@ class Spidclass extends StatelessWidget {
         final ClassMembersArguments args =
             settings.arguments as ClassMembersArguments;
         return buildRoute(ClassMembersPage(arguments: args),
+            settings: settings);
+
+      case AppRoute.attendance:
+        final AttendanceArguments args =
+            settings.arguments as AttendanceArguments;
+        return buildRoute(AttendancePage(arguments: args),
             settings: settings);
 
       default:
