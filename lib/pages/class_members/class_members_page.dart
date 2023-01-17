@@ -115,15 +115,7 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
   }
 
   Widget buildDataTable(List<Member> members) {
-    final columns = [
-      'Full Name',
-      'Class',
-      'Father',
-      'Mother',
-      'Last Payment',
-      'Next Payment',
-      'Other Info'
-    ];
+    final columns = ['Full Name', 'Class', 'Father', 'Mother', 'Other Info'];
     return DataTable(
       columns: getColumns(columns),
       columnSpacing: 12,
@@ -133,21 +125,11 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
   }
 
   List<DataRow> getRows(List<Member> members) => members.map((Member member) {
-        String lastPaymet =
-            "${member.last_payment.day}.${member.last_payment.month}.${member.last_payment.year}";
-        String nextPayment =
-            "${member.next_payment.day}.${member.next_payment.month}.${member.next_payment.year}";
-        if (member.last_payment.year < 2020) {
-          lastPaymet = 'N/A';
-          nextPayment = 'N/A';
-        }
         final cells = [
           '${member.first_name} ${member.second_name}',
           member.class_year,
           member.father,
           member.mother,
-          lastPaymet,
-          nextPayment,
           member.other_information,
         ];
         return DataRow(
@@ -175,8 +157,6 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
     mother_numberController.text = member.mother_number;
     father_numberController.text = member.father_number;
     numberController.text = member.number;
-    trial_lessonController.text = "${member.trial_lesson}";
-    last_paymentController.text = "${member.last_payment}";
     attendanceController.text = "${member.attendance}";
     other_informationController.text = member.other_information;
     ageController.text = "${member.age}";
@@ -218,16 +198,35 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
                   SizedBox(height: sizedBoxHight),
                   MemberTextFromField(numberController, 'Number'),
                   SizedBox(height: sizedBoxHight),
-                  MemberDateFromField(trial_lessonController, 'Trial Lesson'),
-                  SizedBox(height: sizedBoxHight),
-                  MemberDateFromField(last_paymentController, 'Last Payment'),
-                  SizedBox(height: sizedBoxHight),
                   MemberTextFromField(
                       other_informationController, 'Other Info'),
                 ],
               )),
         ),
         actions: [
+          TextButton(
+              onPressed: () => showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                        title: Text('Remove this member?'),
+                        actions: [
+                          TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text('No')),
+                          TextButton(
+                              onPressed: () {
+                                docMember.delete();
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                              },
+                              child: Text('Yes Delete',
+                                  style: TextStyle(color: Colors.red))),
+                        ]),
+                  ),
+              child: Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              )),
           TextButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -245,7 +244,8 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
                 ageController.clear();
                 class_yearController.clear();
               },
-              child: Text('Cancel')),
+              child: Text('Cancel',
+                  style: TextStyle(color: Color.fromARGB(255, 104, 104, 104)))),
           TextButton(
               onPressed: () {
                 docMember.update({
@@ -256,10 +256,6 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
                   'mother_number': mother_numberController.text,
                   'father_number': father_numberController.text,
                   'number': numberController.text,
-                  'trial_lesson': DateTime.parse(trial_lessonController.text),
-                  'last_payment': DateTime.parse(last_paymentController.text),
-                  'next_payment': (DateTime.parse(last_paymentController.text)
-                      .add(const Duration(days: 28))),
                   // 'attendance': 0,
                   'other_information': other_informationController.text,
                   'age': int.parse(ageController.text),
@@ -547,15 +543,10 @@ class _ClassMembersPageState extends State<ClassMembersPage> {
         mother_number: mother_numberController.text,
         father_number: father_numberController.text,
         number: numberController.text,
-        trial_lesson: DateTime.parse(trial_lessonController.text),
-        last_payment: DateTime.parse(last_paymentController.text),
-        next_payment: (DateTime.parse(last_paymentController.text)
-            .add(const Duration(days: 28))),
         attendance: 0,
         attendance_dates: [
           DateTime.parse(trial_lessonController.text),
         ],
-        unpayed_lessons: 0,
         other_information: other_informationController.text,
         isAttending: true,
         age: int.parse(ageController.text),
